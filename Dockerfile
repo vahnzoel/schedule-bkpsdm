@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y \
     libonig-dev \
     libxml2-dev \
     libicu-dev \
+    libsodium-dev \
     sqlite3 \
     libsqlite3-dev \
     && docker-php-ext-install \
@@ -18,6 +19,8 @@ RUN apt-get update && apt-get install -y \
     pdo_sqlite \
     zip \
     gd \
+    sodium \
+    fileinfo \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
@@ -25,7 +28,6 @@ ENV COMPOSER_ALLOW_SUPERUSER=1
 
 WORKDIR /var/www/html
 
-# WAJIB ada composer.lock
 COPY composer.json composer.lock ./
 
 RUN composer install \
