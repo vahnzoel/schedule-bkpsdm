@@ -3,11 +3,22 @@ nixPkgs = ["...", "python311Packages.supervisor"]
 
 [phases.build]
 cmds = [
+    # Buat folder app
+    "mkdir -p /app",
+    
+    # Copy seluruh source code Laravel dari /assets ke /app
+    "cp -R /assets/src/* /app/",
+
+    # Pastikan storage & cache punya permission
+    "mkdir -p /app/storage/logs /app/bootstrap/cache /app/database",
+    "chown -R www-data:www-data /app/storage /app/bootstrap/cache /app/database",
+    "chmod -R 775 /app/storage /app/bootstrap/cache /app/database",
+
+    # Copy supervisor configs
     "mkdir -p /etc/supervisor/conf.d/",
     "cp /assets/worker-*.conf /etc/supervisor/conf.d/",
     "cp /assets/supervisord.conf /etc/supervisord.conf",
-    "chmod +x /assets/start.sh",
-    "..."
+    "chmod +x /assets/start.sh"
 ]
 
 [start]
