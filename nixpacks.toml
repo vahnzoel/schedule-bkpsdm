@@ -5,10 +5,10 @@
 [phases.setup]
 nixPkgs = [
     "nginx",
-    "php80",
-    "php80Packages.pdo_mysql",
-    "php80Packages.sqlite3",
-    "php80Packages.redis",
+    "php",
+    "phpPackages.pdo_mysql",
+    "phpPackages.redis",
+    "phpPackages.sqlite3",
     "supervisor",
     "nodejs",
     "git",
