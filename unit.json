@@ -1,0 +1,16 @@
+{
+    "listeners": {
+        "*:8000": {
+            "pass": "applications/laravel"
+        }
+    },
+    "applications": {
+        "laravel": {
+            "type": "php",
+            "root": "/var/www/html/public",
+            "index": "index.php",
+            "user": "unit",
+            "group": "unit"
+        }
+    }
+}
