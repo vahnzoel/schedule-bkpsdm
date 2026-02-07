@@ -1,76 +1,47 @@
-[phases.setup]
-# Semua paket yang dibutuhkan
-packages = [
-  "git",
-  "nginx",
-  "nodejs",
-  "php",
-  "phpPackages.pdo_mysql",
-  "phpPackages.redis",
-  "phpPackages.sqlite3",
-  "libreoffice",
-  "poppler-utils",
-  "supervisor",
-  "unzip",
-  "curl",
-  "wget"
-]
+# Nixpacks configuration file for Laravel 12 + Livewire 4 Full Stack
 
-[phases.install]
-# Composer install + node install jika ada package.json
+[phases.setup]
 commands = [
-  "composer install --prefer-dist --optimize-autoloader --no-interaction",
-  "if [ -f package.json ]; then npm install; fi"
+  # System packages
+  "nix-env -iA nixpkgs.php phpPackages.composer phpPackages.sqlite phpPackages.redis phpPackages.phpredis",
+  "nix-env -iA nixpkgs.libreoffice nixpkgs.poppler-utils",
+  "nix-env -iA nixpkgs.nodejs nixpkgs.npm nginx supervisor",
 ]
 
 [phases.build]
-# Build front-end Laravel (Vite/Livewire)
 commands = [
-  "if [ -f package.json ]; then npm run build; fi"
+  "composer install --no-interaction --prefer-dist --optimize-autoloader",
+  "npm install",
+  "npm run build",
+  "mkdir -p storage bootstrap/cache database",
+  "chmod -R 775 storage bootstrap/cache database",
 ]
 
 [phases.start]
 commands = [
-  "mkdir -p /var/www/html/storage /var/www/html/bootstrap/cache",
-  "chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache",
-  "chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache",
+  # Start Redis
+  "redis-server --daemonize yes",
   
-  # PHP-FPM dan Nginx
-  "service php-fpm start",
-  "service redis-server start",
+  # Start PHP-FPM
+  "php-fpm -D",
   
-  # Supervisor
-  "mkdir -p /etc/supervisor/conf.d",
-  "echo '[program:laravel-queue]' > /etc/supervisor/conf.d/laravel-queue.conf",
-  "echo 'command=php /var/www/html/artisan queue:work --sleep=3 --tries=3' >> /etc/supervisor/conf.d/laravel-queue.conf",
-  "echo 'autostart=true' >> /etc/supervisor/conf.d/laravel-queue.conf",
-  "echo 'autorestart=true' >> /etc/supervisor/conf.d/laravel-queue.conf",
-  "supervisord -c /etc/supervisor/supervisord.conf",
+  # Start Supervisor to run Laravel queue worker
+  "supervisord -c /app/.nixpacks/supervisord.conf",
   
-  # Nginx configuration
-  "rm -f /etc/nginx/sites-enabled/default",
-  "echo 'server {' > /etc/nginx/sites-available/laravel.conf",
-  "echo '    listen 80;' >> /etc/nginx/sites-available/laravel.conf",
-  "echo '    server_name _;' >> /etc/nginx/sites-available/laravel.conf",
-  "echo '    root /app/public;' >> /etc/nginx/sites-available/laravel.conf",
-  "echo '    index index.php index.html;' >> /etc/nginx/sites-available/laravel.conf",
-  "echo '    location / {' >> /etc/nginx/sites-available/laravel.conf",
-  "echo '        try_files $uri $uri/ /index.php?$query_string;' >> /etc/nginx/sites-available/laravel.conf",
-  "echo '    }' >> /etc/nginx/sites-available/laravel.conf",
-  "echo '    location ~ \\.php$ {' >> /etc/nginx/sites-available/laravel.conf",
-  "echo '        fastcgi_pass unix:/run/php/php-fpm.sock;' >> /etc/nginx/sites-available/laravel.conf",
-  "echo '        fastcgi_index index.php;' >> /etc/nginx/sites-available/laravel.conf",
-  "echo '        include fastcgi_params;' >> /etc/nginx/sites-available/laravel.conf",
-  "echo '        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;' >> /etc/nginx/sites-available/laravel.conf",
-  "echo '    }' >> /etc/nginx/sites-available/laravel.conf",
-  "echo '    location ~ /\\.ht { deny all; }' >> /etc/nginx/sites-available/laravel.conf",
-  "echo '}' >> /etc/nginx/sites-available/laravel.conf",
-  "ln -s /etc/nginx/sites-available/laravel.conf /etc/nginx/sites-enabled/laravel.conf",
+  # Start Cron for Laravel scheduled tasks
+  "cron",
   
-  "service nginx start"
+  # Start Nginx in foreground
+  "nginx -g 'daemon off;'"
 ]
 
 [env]
-# PHP root dan fallback Laravel
 NIXPACKS_PHP_ROOT_DIR = "/app/public"
 NIXPACKS_PHP_FALLBACK_PATH = "/index.php"
+APP_ENV = "production"
+APP_DEBUG = "false"
+APP_KEY = "base64:YOUR_APP_KEY_HERE"
+DB_CONNECTION = "sqlite"
+DB_DATABASE = "/app/database/database.sqlite"
+CACHE_DRIVER = "redis"
+QUEUE_CONNECTION = "redis"
