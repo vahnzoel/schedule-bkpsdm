@@ -30,13 +30,19 @@ WORKDIR /var/www/html
 
 COPY composer.json composer.lock ./
 
+# ⬅️ INI KUNCI UTAMA
 RUN composer install \
     --no-dev \
     --no-interaction \
     --prefer-dist \
-    --no-progress
+    --no-progress \
+    --no-scripts
 
 COPY . .
 
+# Jalankan script Laravel SETELAH container hidup
 EXPOSE 8000
-CMD ["php", "-S", "0.0.0.0:8000", "-t", "public"]
+CMD php -r "file_exists('.env') || copy('.env.example', '.env');" \
+    && php artisan key:generate --force \
+    && php artisan migrate --force || true \
+    && php artisan serve --host=0.0.0.0 --port=8000
