@@ -30,35 +30,24 @@ commands = [
 ]
 
 [phases.start]
-# Persiapan folder dan permission
 commands = [
   "mkdir -p /var/www/html/storage /var/www/html/bootstrap/cache",
   "chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache",
   "chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache",
-
-  # Konfigurasi OpCache + JIT
-  "echo 'opcache.enable=1' > /etc/php/php.ini",
-  "echo 'opcache.jit=tracing' >> /etc/php/php.ini",
-  "echo 'opcache.jit_buffer_size=256M' >> /etc/php/php.ini",
-  "echo 'memory_limit=512M' >> /etc/php/php.ini",
-  "echo 'upload_max_filesize=64M' >> /etc/php/php.ini",
-  "echo 'post_max_size=64M' >> /etc/php/php.ini",
-
-  # Jalankan PHP-FPM
+  
+  # PHP-FPM dan Nginx
   "service php-fpm start",
-
-  # Jalankan Redis (jika perlu)
   "service redis-server start",
-
-  # Jalankan Supervisor untuk queue Laravel
+  
+  # Supervisor
   "mkdir -p /etc/supervisor/conf.d",
   "echo '[program:laravel-queue]' > /etc/supervisor/conf.d/laravel-queue.conf",
   "echo 'command=php /var/www/html/artisan queue:work --sleep=3 --tries=3' >> /etc/supervisor/conf.d/laravel-queue.conf",
   "echo 'autostart=true' >> /etc/supervisor/conf.d/laravel-queue.conf",
   "echo 'autorestart=true' >> /etc/supervisor/conf.d/laravel-queue.conf",
   "supervisord -c /etc/supervisor/supervisord.conf",
-
-  # Konfigurasi default Nginx untuk Laravel
+  
+  # Nginx configuration
   "rm -f /etc/nginx/sites-enabled/default",
   "echo 'server {' > /etc/nginx/sites-available/laravel.conf",
   "echo '    listen 80;' >> /etc/nginx/sites-available/laravel.conf",
@@ -68,17 +57,16 @@ commands = [
   "echo '    location / {' >> /etc/nginx/sites-available/laravel.conf",
   "echo '        try_files $uri $uri/ /index.php?$query_string;' >> /etc/nginx/sites-available/laravel.conf",
   "echo '    }' >> /etc/nginx/sites-available/laravel.conf",
-  "echo '    location ~ \.php$ {' >> /etc/nginx/sites-available/laravel.conf",
+  "echo '    location ~ \\.php$ {' >> /etc/nginx/sites-available/laravel.conf",
   "echo '        fastcgi_pass unix:/run/php/php-fpm.sock;' >> /etc/nginx/sites-available/laravel.conf",
   "echo '        fastcgi_index index.php;' >> /etc/nginx/sites-available/laravel.conf",
   "echo '        include fastcgi_params;' >> /etc/nginx/sites-available/laravel.conf",
   "echo '        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;' >> /etc/nginx/sites-available/laravel.conf",
   "echo '    }' >> /etc/nginx/sites-available/laravel.conf",
-  "echo '    location ~ /\.ht { deny all; }' >> /etc/nginx/sites-available/laravel.conf",
+  "echo '    location ~ /\\.ht { deny all; }' >> /etc/nginx/sites-available/laravel.conf",
   "echo '}' >> /etc/nginx/sites-available/laravel.conf",
   "ln -s /etc/nginx/sites-available/laravel.conf /etc/nginx/sites-enabled/laravel.conf",
-
-  # Jalankan Nginx
+  
   "service nginx start"
 ]
 
