@@ -4,17 +4,14 @@
 
 [phases.setup]
 nixPkgs = [
-    "nginx",
-    "php",
-    "phpPackages.pdo_mysql",
-    "phpPackages.redis",
-    "phpPackages.sqlite3",
-    "supervisor",
-    "nodejs",
-    "git",
-    "unzip",
-    "libreoffice",
+    "nginx"
+    "git"
+    "nodejs"
+    "unzip"
+    "supervisor"
+    "libreoffice"
     "poppler-utils"
+    "phpWithExtensions (php: [ php.extensions.pdo_mysql php.extensions.redis php.extensions.sqlite3 ])"
 ]
 
 [phases.build]
