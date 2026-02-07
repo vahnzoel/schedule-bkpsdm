@@ -40,9 +40,4 @@ RUN composer install \
 
 COPY . .
 
-# Jalankan script Laravel SETELAH container hidup
-EXPOSE 8000
-CMD php -r "file_exists('.env') || copy('.env.example', '.env');" \
-    && php artisan key:generate --force \
-    && php artisan migrate --force || true \
-    && php artisan serve --host=0.0.0.0 --port=8000
+CMD ["php-fpm"]
