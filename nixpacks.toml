@@ -11,7 +11,7 @@ nixPkgs = [
     "supervisor"
     "libreoffice"
     "poppler-utils"
-    "phpWithExtensions (php: [ php.extensions.pdo_mysql php.extensions.redis php.extensions.sqlite3 ])"
+    "phpWithExtensions"
 ]
 
 [phases.build]
