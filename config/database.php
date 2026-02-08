@@ -31,10 +31,10 @@ return [
 
     'connections' => [
 
-        'sqlite' => [
+        'system' => [
             'driver' => 'sqlite',
             'url' => env('DB_URL'),
-            'database' => env('DB_DATABASE', database_path('system.sqlite')),
+            'database' => "/app/database/system.sqlite",
             'prefix' => '',
             'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
         ],
@@ -42,7 +42,7 @@ return [
         'bkpsdm' => [
             'driver' => 'sqlite',
             'url' => env('DB_URL'),
-            'database' => env('DB_DATABASE', database_path('bkpsdm.sqlite')),
+            'database' => "/app/database/bkpsdm.sqlite",
             'prefix' => '',
             'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
         ],
