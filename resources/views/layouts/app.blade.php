@@ -32,6 +32,7 @@
     <!-- App Css-->
     <link data-navigate-once href="{{ URL::asset('assets/css/app.min.css') }}" id="app-style" rel="stylesheet"
         type="text/css" />
+    @livewireStyles
 </head>
 
 <!-- <body data-layout="horizontal" data-topbar="dark" oncontextmenu="return false" onselectstart="return false"
@@ -149,7 +150,7 @@
 
     <script data-navigate-once src="{{ URL::asset('vendor/livewire-alert/sweetalert2@11.js') }}"></script>
     <script data-navigate-once src="{{ URL::asset('vendor/livewire-alert/livewire-alert.js') }}"></script>
-    <script data-navigate-once src="{{ URL::asset('vendor/livewire/livewire.js') }}"></script>
+    @livewireScripts
 </body>
 
 </html>
